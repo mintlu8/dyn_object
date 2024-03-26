@@ -1,0 +1,18 @@
+[package]
+name = "dyn_object"
+version = "0.1.0"
+edition = "2021"
+
+authors = ["Mincong Lu <mintlux667@gmail.com>"]
+license = "MIT OR Apache-2.0"
+
+readme = "README.md"
+repository = "https://github.com/mintlu8/dyn_object"
+description = """
+Ergonomic and thread safe version of Box<dyn Any>.
+"""
+
+keywords = ["any", "dyn", "object"]
+
+[dependencies]
+downcast-rs = "1.2.0"
