@@ -179,8 +179,8 @@ impl Object {
     /// # use dyn_object::Object;
     /// assert_eq!(Object::new(1).cloned::<i32>().unwrap(), 1);
     /// assert!(Object::new(1).cloned::<String>().is_none());
-    /// //assert_eq!(Object::new(1).cloned::<Object>().unwrap(), Object::new(1));
-    /// //assert!(Object::NONE.cloned::<Object>().is_none());
+    /// assert_eq!(Object::new(1).cloned::<Object>().unwrap(), Object::new(1));
+    /// assert!(Object::NONE.cloned::<Object>().is_none());
     /// ```
     pub fn cloned<T: AsObject>(&self) -> Option<T> {
         AsObject::cloned(self)
@@ -200,16 +200,40 @@ impl Object {
     }
 
     /// Try obtain the value's mutable reference.
+    /// 
+    /// ```
+    /// # use dyn_object::Object;
+    /// assert_eq!(Object::new(1).get_mut::<i32>(), Some(&mut 1));
+    /// assert_eq!(Object::new(1).get_mut::<String>(), None);
+    /// assert_eq!(Object::new(1).get_mut::<Object>(), Some(&mut Object::new(1)));
+    /// assert_eq!(Object::NONE.get_mut::<Object>(), None);
+    /// ```
     pub fn get_mut<T: AsObject>(&mut self) -> Option<&mut T> {
         AsObject::get_mut(self)
     }
 
     /// Remove the value from the object, leaving behind a `Object::NONE`.
+    /// 
+    /// ```
+    /// # use dyn_object::Object;
+    /// let mut obj = Object::new(4);
+    /// assert!(obj.is_some());
+    /// obj.clear();
+    /// assert!(obj.is_none());
+    /// ```
     pub fn clear(&mut self) {
         self.0.take();
     }
 
     /// Take the value from the object, leaving behind a `Object::NONE`.
+    /// 
+    /// ```
+    /// # use dyn_object::Object;
+    /// let mut obj = Object::new(5);
+    /// assert!(obj.is_some());
+    /// assert_eq!(obj.take(), Some(5));
+    /// assert!(obj.is_none());
+    /// ```
     pub fn take<T: AsObject>(&mut self) -> Option<T> {
         AsObject::from_object(mem::take(self))
     }
@@ -220,8 +244,10 @@ impl Object {
     }
 
     /// Swap the value of the object with another value.
-    pub fn replace<T: AsObject>(&mut self, v: T) -> Option<T>{
-        self.get_mut().map(|x| mem::replace(x, v))
+    pub fn replace<A: AsObject, B: AsObject>(&mut self, v: A) -> Option<B>{
+        let original = self.take();
+        self.set(v);
+        original
     }
 
     /// If none, box another value as a new object.
@@ -243,10 +269,17 @@ impl Object {
     }
 
     /// Compare Object to a value that can be converted to an object.
+    /// 
+    /// ```
+    /// # use dyn_object::Object;
+    /// let mut obj = Object::new(5);
+    /// assert!(obj.equals(&5));
+    /// assert!(!obj.equals(&6));
+    /// ```
     pub fn equals<T: AsObject>(&self, other: &T) -> bool {
         match (&self.0, other.as_dyn_inner())  {
             (None, None) => true,
-            (Some(a), Some(b)) => a.dyn_eq(b),
+            (Some(a), Some(b)) => a.as_ref().dyn_eq(b),
             _ => false
         }
     }
