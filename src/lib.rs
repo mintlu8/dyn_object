@@ -239,6 +239,14 @@ impl Object {
     }
 
     /// Set the value of the object.
+    /// 
+    /// ```
+    /// # use dyn_object::Object;
+    /// let mut obj = Object::new(5);
+    /// assert!(obj.equals(&5));
+    /// obj.set("pi");
+    /// assert!(obj.equals(&"pi"));
+    /// ```
     pub fn set<T: AsObject>(&mut self, v: T) {
         *self = AsObject::into_object(v)
     }
